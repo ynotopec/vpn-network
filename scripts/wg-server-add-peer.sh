@@ -61,6 +61,11 @@ validate_allowed_ips() {
   [[ "$value" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$ ]] || [[ "$value" =~ ^([0-9a-fA-F:]+)/[0-9]{1,3}$ ]]
 }
 
+validate_port() {
+  [[ "$1" =~ ^[0-9]+$ ]] || return 1
+  (( "$1" >= 1 && "$1" <= 65535 ))
+}
+
 render_endpoint() {
   local endpoint="$1"
   local default_port="$2"
@@ -105,6 +110,26 @@ validate_ipv4 "${WG_SERVER_IP}" || {
 
 validate_client_name "${CLIENT_NAME}" || {
   echo "Error: client_name must contain only letters, digits, dot, underscore, or dash." >&2
+  exit 1
+}
+
+validate_port "${WG_PORT}" || {
+  echo "Error: WG_PORT must be an integer between 1 and 65535." >&2
+  exit 1
+}
+
+[[ -r "${WG_CONF}" ]] || {
+  echo "Error: server config not found/readable at ${WG_CONF}. Run wg-server-install.sh first." >&2
+  exit 1
+}
+
+[[ -r "${WG_SERVER_PUB}" ]] || {
+  echo "Error: server public key not found/readable at ${WG_SERVER_PUB}." >&2
+  exit 1
+}
+
+wg show "${WG_IF}" >/dev/null 2>&1 || {
+  echo "Error: interface ${WG_IF} is not active. Start wg-quick@${WG_IF} first." >&2
   exit 1
 }
 
