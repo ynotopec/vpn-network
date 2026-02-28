@@ -146,6 +146,19 @@ umask 077
 wg genkey | tee "${CLIENT_PRIV}" | wg pubkey > "${CLIENT_PUB}"
 
 if ! grep -qF "${PEER_TAG}" "${WG_CONF}"; then
+  awk '
+    NF {
+      if (pending_blank) {
+        print ""
+        pending_blank=0
+      }
+      print
+      next
+    }
+    { pending_blank=1 }
+  ' "${WG_CONF}" > "${TMPDIR}/${WG_IF}.normalized.conf"
+  install -m 600 "${TMPDIR}/${WG_IF}.normalized.conf" "${WG_CONF}"
+
   umask 077
   cat >> "${WG_CONF}" <<EOF_PEER
 
