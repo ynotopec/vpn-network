@@ -57,7 +57,19 @@ awk -v tag="${PEER_TAG}" '
   !skip {print}
 ' "${WG_CONF}" > "${TMP_CONF}"
 
-install -m 600 "${TMP_CONF}" "${WG_CONF}"
+awk '
+  NF {
+    if (pending_blank) {
+      print ""
+      pending_blank=0
+    }
+    print
+    next
+  }
+  { pending_blank=1 }
+' "${TMP_CONF}" > "${TMPDIR}/${WG_IF}.normalized.conf"
+
+install -m 600 "${TMPDIR}/${WG_IF}.normalized.conf" "${WG_CONF}"
 wg syncconf "${WG_IF}" <(wg-quick strip "${WG_IF}")
 
 if [[ -n "${CLIENT_PUB}" ]]; then
