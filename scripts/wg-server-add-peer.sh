@@ -14,6 +14,22 @@ CLIENT_NAME="${1:?Usage: $0 <client_name> <client_ip_last_octet> [allowed_ips]>}
 CLIENT_OCTET="${2:?Usage: $0 <client_name> <client_ip_last_octet> [allowed_ips]>}"
 CLIENT_ALLOWED="${3:-${WG_NET_CIDR}}"
 
+validate_ipv4() {
+  local ip="$1"
+  local IFS=.
+  local -a parts
+  read -r -a parts <<<"${ip}"
+  [[ ${#parts[@]} -eq 4 ]] || return 1
+  for octet in "${parts[@]}"; do
+    [[ "$octet" =~ ^[0-9]+$ ]] || return 1
+    (( octet >= 0 && octet <= 255 )) || return 1
+  done
+}
+
+validate_client_name() {
+  [[ "$1" =~ ^[a-zA-Z0-9._-]+$ ]]
+}
+
 validate_octet() {
   [[ "$1" =~ ^[0-9]+$ ]] || return 1
   (( "$1" >= 2 && "$1" <= 254 ))
@@ -34,7 +50,18 @@ validate_allowed_ips "${CLIENT_ALLOWED}" || {
   exit 1
 }
 
-CLIENT_IP="10.10.0.${CLIENT_OCTET}"
+validate_ipv4 "${WG_SERVER_IP}" || {
+  echo "Error: WG_SERVER_IP must be a valid IPv4 address (e.g. 10.10.0.1)." >&2
+  exit 1
+}
+
+validate_client_name "${CLIENT_NAME}" || {
+  echo "Error: client_name must contain only letters, digits, dot, underscore, or dash." >&2
+  exit 1
+}
+
+CLIENT_SUBNET_PREFIX="${WG_SERVER_IP%.*}"
+CLIENT_IP="${CLIENT_SUBNET_PREFIX}.${CLIENT_OCTET}"
 PEER_TAG="### peer:${CLIENT_NAME}"
 
 TMPDIR="$(mktemp -d)"
