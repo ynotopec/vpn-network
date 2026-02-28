@@ -52,7 +52,9 @@ sudo SERVER_ENDPOINT=vps.example.com:443 ./scripts/wg-server-add-peer.sh laptop 
 sudo SERVER_ENDPOINT=vps.example.com ./scripts/wg-server-add-peer.sh laptop 2 "0.0.0.0/0" > laptop.conf
 ```
 
-> `SERVER_ENDPOINT` accepte un hôte/IP seul (port par défaut `WG_PORT`) ou un endpoint déjà port-aware (`host:port`, `1.2.3.4:port`, `[IPv6]:port`).
+> `SERVER_ENDPOINT` accepte un hôte/IP seul (port détecté depuis `ListenPort` de `/etc/wireguard/wg0.conf`, sinon `51820`) ou un endpoint déjà port-aware (`host:port`, `1.2.3.4:port`, `[IPv6]:port`).
+>
+> Si besoin, vous pouvez forcer le port côté client via `WG_PORT=<port>` lors de l'exécution de `wg-server-add-peer.sh`.
 
 ### 3) Installer le client
 
@@ -67,7 +69,7 @@ Sur serveur :
 
 ```bash
 sudo wg show
-sudo ss -lunp | grep 51820
+sudo ss -lunp | grep wg
 ```
 
 Sur client :

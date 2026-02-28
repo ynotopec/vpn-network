@@ -2,12 +2,33 @@
 set -euo pipefail
 
 WG_IF="${WG_IF:-wg0}"
-WG_PORT="${WG_PORT:-51820}"
 WG_NET_CIDR="${WG_NET_CIDR:-10.10.0.0/24}"
 WG_SERVER_IP="${WG_SERVER_IP:-10.10.0.1}"
-WG_DIR="/etc/wireguard"
+WG_DIR="${WG_DIR:-/etc/wireguard}"
 WG_CONF="${WG_DIR}/${WG_IF}.conf"
 WG_SERVER_PUB="${WG_DIR}/${WG_IF}.pub"
+
+resolve_wg_port() {
+  local conf_path="$1"
+
+  if [[ -n "${WG_PORT:-}" ]]; then
+    printf '%s\n' "${WG_PORT}"
+    return
+  fi
+
+  if [[ -f "${conf_path}" ]]; then
+    local detected_port
+    detected_port="$(awk -F '=' '/^[[:space:]]*ListenPort[[:space:]]*=/{gsub(/[[:space:]]/,"",$2); print $2; exit}' "${conf_path}")"
+    if [[ "${detected_port}" =~ ^[0-9]+$ ]]; then
+      printf '%s\n' "${detected_port}"
+      return
+    fi
+  fi
+
+  printf '51820\n'
+}
+
+WG_PORT="$(resolve_wg_port "${WG_CONF}")"
 
 SERVER_ENDPOINT="${SERVER_ENDPOINT:?Set SERVER_ENDPOINT=your.vps.public.ip_or_dns}"
 CLIENT_NAME="${1:?Usage: $0 <client_name> <client_ip_last_octet> [allowed_ips]>}"
