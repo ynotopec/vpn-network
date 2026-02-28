@@ -163,7 +163,6 @@ cat <<EOF_CLIENT
 [Interface]
 Address = ${CLIENT_IP}/32
 PrivateKey = $(cat "${CLIENT_PRIV}")
-DNS = 1.1.1.1
 
 [Peer]
 PublicKey = $(cat "${WG_SERVER_PUB}")
