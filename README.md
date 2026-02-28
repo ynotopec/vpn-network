@@ -27,6 +27,14 @@ Configuration WireGuard **hub-and-spoke via VPS public** pour Ubuntu/Debian.
   - Installe WireGuard côté client
   - Déploie `/etc/wireguard/wg0.conf`
   - Active `wg-quick@wg0`
+- `scripts/wg-client-uninstall.sh`
+  - Arrête/désactive `wg-quick@wg0` côté client
+  - Supprime `/etc/wireguard/wg0.conf`
+  - Désinstalle le paquet `wireguard`
+- `scripts/wg-server-uninstall.sh`
+  - Arrête/désactive `wg-quick@wg0` côté serveur
+  - Supprime la configuration et les clés du serveur
+  - Désinstalle le paquet `wireguard`
 
 ## Utilisation
 
@@ -61,6 +69,22 @@ sudo SERVER_ENDPOINT=vps.example.com ./scripts/wg-server-add-peer.sh laptop 2 "0
 ```bash
 chmod +x scripts/wg-client-install.sh
 sudo ./scripts/wg-client-install.sh ./laptop.conf
+```
+
+### 4) Désinstaller (optionnel)
+
+Client :
+
+```bash
+chmod +x scripts/wg-client-uninstall.sh
+sudo ./scripts/wg-client-uninstall.sh
+```
+
+Serveur :
+
+```bash
+chmod +x scripts/wg-server-uninstall.sh
+sudo ./scripts/wg-server-uninstall.sh
 ```
 
 ## Vérifications rapides
