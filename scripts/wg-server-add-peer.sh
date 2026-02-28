@@ -40,6 +40,33 @@ validate_allowed_ips() {
   [[ "$value" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$ ]] || [[ "$value" =~ ^([0-9a-fA-F:]+)/[0-9]{1,3}$ ]]
 }
 
+render_endpoint() {
+  local endpoint="$1"
+  local default_port="$2"
+
+  if [[ "$endpoint" =~ ^\[[0-9a-fA-F:]+\]:[0-9]+$ ]]; then
+    printf '%s\n' "$endpoint"
+    return
+  fi
+
+  if [[ "$endpoint" =~ ^\[[0-9a-fA-F:]+\]$ ]]; then
+    printf '%s:%s\n' "$endpoint" "$default_port"
+    return
+  fi
+
+  if [[ "$endpoint" =~ :[0-9]+$ ]] && [[ "$endpoint" != *:*:* ]]; then
+    printf '%s\n' "$endpoint"
+    return
+  fi
+
+  if [[ "$endpoint" == *:* ]]; then
+    printf '[%s]:%s\n' "$endpoint" "$default_port"
+    return
+  fi
+
+  printf '%s:%s\n' "$endpoint" "$default_port"
+}
+
 validate_octet "${CLIENT_OCTET}" || {
   echo "Error: client_ip_last_octet must be an integer between 2 and 254." >&2
   exit 1
@@ -63,6 +90,7 @@ validate_client_name "${CLIENT_NAME}" || {
 CLIENT_SUBNET_PREFIX="${WG_SERVER_IP%.*}"
 CLIENT_IP="${CLIENT_SUBNET_PREFIX}.${CLIENT_OCTET}"
 PEER_TAG="### peer:${CLIENT_NAME}"
+CLIENT_ENDPOINT="$(render_endpoint "${SERVER_ENDPOINT}" "${WG_PORT}")"
 
 TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR"' EXIT
@@ -93,7 +121,7 @@ DNS = 1.1.1.1
 
 [Peer]
 PublicKey = $(cat "${WG_SERVER_PUB}")
-Endpoint = ${SERVER_ENDPOINT}:${WG_PORT}
+Endpoint = ${CLIENT_ENDPOINT}
 AllowedIPs = ${CLIENT_ALLOWED}
 PersistentKeepalive = 25
 EOF_CLIENT

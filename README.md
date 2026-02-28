@@ -45,9 +45,14 @@ chmod +x scripts/wg-server-add-peer.sh
 # Client "laptop" => 10.10.0.2
 sudo SERVER_ENDPOINT=vps.example.com ./scripts/wg-server-add-peer.sh laptop 2 > laptop.conf
 
+# Port custom (ex: si WireGuard écoute sur 443/udp)
+sudo SERVER_ENDPOINT=vps.example.com:443 ./scripts/wg-server-add-peer.sh laptop 2 > laptop.conf
+
 # Full tunnel depuis le client
 sudo SERVER_ENDPOINT=vps.example.com ./scripts/wg-server-add-peer.sh laptop 2 "0.0.0.0/0" > laptop.conf
 ```
+
+> `SERVER_ENDPOINT` accepte un hôte/IP seul (port par défaut `WG_PORT`) ou un endpoint déjà port-aware (`host:port`, `1.2.3.4:port`, `[IPv6]:port`).
 
 ### 3) Installer le client
 
