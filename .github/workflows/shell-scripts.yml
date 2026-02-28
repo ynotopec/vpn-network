@@ -13,9 +13,12 @@ jobs:
         run: |
           bash -n scripts/wg-server-install.sh
           bash -n scripts/wg-server-add-peer.sh
+          bash -n scripts/wg-server-remove-peer.sh
+          bash -n scripts/wg-server-uninstall.sh
           bash -n scripts/wg-client-install.sh
+          bash -n scripts/wg-client-uninstall.sh
       - name: Shellcheck
         run: |
           sudo apt-get update
           sudo apt-get install -y shellcheck
-          shellcheck scripts/wg-server-install.sh scripts/wg-server-add-peer.sh scripts/wg-client-install.sh
+          shellcheck scripts/wg-server-install.sh scripts/wg-server-add-peer.sh scripts/wg-server-remove-peer.sh scripts/wg-server-uninstall.sh scripts/wg-client-install.sh scripts/wg-client-uninstall.sh

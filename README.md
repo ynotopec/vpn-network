@@ -23,6 +23,10 @@ Configuration WireGuard **hub-and-spoke via VPS public** pour Ubuntu/Debian.
   - Ajoute un peer au serveur si absent
   - Génère une config client sur stdout
   - Validation de base des entrées (`octet`, `allowed_ips`)
+- `scripts/wg-server-remove-peer.sh`
+  - Supprime un peer serveur via son `client_name`
+  - Retire le bloc `### peer:<name>` du fichier de conf
+  - Recharge la configuration WireGuard
 - `scripts/wg-client-install.sh`
   - Installe WireGuard côté client
   - Déploie `/etc/wireguard/wg0.conf`
@@ -64,14 +68,21 @@ sudo SERVER_ENDPOINT=vps.example.com ./scripts/wg-server-add-peer.sh laptop 2 "0
 >
 > Si besoin, vous pouvez forcer le port côté client via `WG_PORT=<port>` lors de l'exécution de `wg-server-add-peer.sh`.
 
-### 3) Installer le client
+### 3) Supprimer un client depuis le VPS (optionnel)
+
+```bash
+chmod +x scripts/wg-server-remove-peer.sh
+sudo ./scripts/wg-server-remove-peer.sh laptop
+```
+
+### 4) Installer le client
 
 ```bash
 chmod +x scripts/wg-client-install.sh
 sudo ./scripts/wg-client-install.sh ./laptop.conf
 ```
 
-### 4) Désinstaller (optionnel)
+### 5) Désinstaller (optionnel)
 
 Client :
 
